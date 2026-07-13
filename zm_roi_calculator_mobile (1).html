@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ZM8 ROI — Washington State</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0a1628;--card:#111f38;--card2:#0f1c34;
+  --blue:#1a3a6b;--electric:#00aaff;--volt:#00e5c0;
+  --amber:#ffb800;--white:#f0f6ff;--muted:#7a95b8;
+  --border:rgba(0,170,255,0.15);--green:#00c853;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow-x:hidden;}
+body{background:var(--navy);color:var(--white);font-family:'Barlow',sans-serif;font-weight:300;display:flex;flex-direction:column;min-height:100vh;}
+
+/* HEADER */
+.top-bar{background:#0d1f3c;border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;z-index:10;}
+.logo{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:20px;color:var(--white);}
+.logo span{color:var(--electric);}
+.badge{font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--volt);background:rgba(0,229,192,0.1);border:1px solid rgba(0,229,192,0.25);padding:3px 8px;border-radius:20px;}
+
+/* LIVE STRIP */
+.strip{display:grid;grid-template-columns:repeat(2,1fr);background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0;}
+.strip-item{padding:10px 12px;border-right:1px solid var(--border);}
+.strip-item:nth-child(2),.strip-item:nth-child(4){border-right:none;}
+.strip-item:nth-child(3),.strip-item:nth-child(4){border-top:1px solid var(--border);}
+.s-label{font-size:9px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:2px;}
+.s-val{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;line-height:1;}
+.s-val.green{color:var(--volt);}
+.s-val.amber{color:var(--amber);}
+.s-val.blue{color:var(--electric);}
+
+/* TABS */
+.tabs{display:flex;background:var(--card2);border-bottom:1px solid var(--border);flex-shrink:0;}
+.tab{flex:1;padding:12px;text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;}
+.tab.active{color:var(--electric);border-bottom-color:var(--electric);}
+
+/* PANELS */
+.panel{display:none;flex:1;overflow-y:auto;padding:16px;}
+.panel.active{display:block;}
+
+/* SLIDERS */
+.sec-title{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--electric);margin-bottom:12px;padding-bottom:5px;border-bottom:1px solid var(--border);}
+.slider-group{margin-bottom:16px;}
+.sl-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
+.sl-name{font-size:14px;color:var(--white);}
+.sl-val{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--electric);}
+input[type=range]{width:100%;height:5px;background:var(--blue);border-radius:3px;outline:none;-webkit-appearance:none;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--electric);cursor:pointer;box-shadow:0 0 10px rgba(0,170,255,0.5);}
+.range-ends{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:3px;}
+
+/* DIESEL TRUCK BLOCK */
+.diesel-truck-group{background:rgba(255,154,74,0.06);border:1px solid rgba(255,154,74,0.2);border-radius:10px;padding:12px;margin-bottom:16px;}
+.diesel-truck-label{font-size:10px;color:#ff9a4a;letter-spacing:0.1em;text-transform:uppercase;font-weight:600;margin-bottom:8px;}
+.diesel-truck-group input[type=range]{background:#3d2010;}
+.diesel-truck-group input[type=range]::-webkit-slider-thumb{background:#ff9a4a;box-shadow:0 0 10px rgba(255,154,74,0.5);}
+
+/* WAZIP — green energy theme */
+.wazip-block{background:rgba(0,200,83,0.06);border:1px solid rgba(0,200,83,0.25);border-radius:10px;padding:14px;margin-bottom:16px;}
+.wazip-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.wazip-lbl{font-size:14px;font-weight:600;color:var(--green);}
+.toggle{position:relative;width:48px;height:26px;cursor:pointer;}
+.toggle input{opacity:0;width:0;height:0;}
+.tgl-sl{position:absolute;inset:0;background:#1a2e1a;border-radius:13px;transition:0.3s;}
+.tgl-sl:before{content:'';position:absolute;width:20px;height:20px;left:3px;bottom:3px;background:#4a5568;border-radius:50%;transition:0.3s;}
+.toggle input:checked + .tgl-sl{background:var(--green);}
+.toggle input:checked + .tgl-sl:before{transform:translateX(22px);background:#ffffff;}
+.tier-sel{display:none;flex-direction:column;gap:6px;}
+.tier-sel.vis{display:flex;}
+.tier-btn{padding:10px 12px;border-radius:8px;border:1px solid rgba(0,200,83,0.2);background:transparent;color:var(--muted);font-family:'Barlow',sans-serif;font-size:13px;cursor:pointer;text-align:left;transition:all 0.2s;}
+.tier-btn.active{border-color:var(--green);background:rgba(0,200,83,0.1);color:var(--white);}
+.tier-btn strong{display:block;font-size:16px;color:var(--green);font-family:'Barlow Condensed',sans-serif;font-weight:700;}
+
+/* MAINTENANCE BLOCK */
+.maint-block{background:rgba(0,229,192,0.05);border:1px solid rgba(0,229,192,0.15);border-radius:10px;padding:14px;margin-bottom:16px;}
+.maint-hdr{display:flex;align-items:center;justify-content:space-between;cursor:pointer;}
+.maint-ttl{font-size:14px;font-weight:600;color:var(--volt);}
+.maint-sum{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;}
+.ms-item{text-align:center;}
+.ms-lbl{font-size:10px;color:#c8d8e8;text-transform:uppercase;letter-spacing:0.1em;font-weight:600;}
+.ms-val{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;}
+.exp-icon{font-size:16px;color:var(--muted);transition:transform 0.2s;}
+.exp-icon.open{transform:rotate(180deg);}
+.maint-det{display:none;margin-top:12px;}
+.maint-det.vis{display:block;}
+.maint-cat{font-size:10px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin:12px 0 6px;}
+.maint-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);}
+.mr-label{font-size:12px;color:var(--white);flex:1;padding-right:8px;}
+.mr-ctrls{display:flex;align-items:center;gap:8px;}
+.adj-btn{width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center;}
+.adj-btn:active{background:rgba(0,170,255,0.15);color:var(--electric);}
+.mr-val{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:600;width:56px;text-align:right;}
+.mr-val.dsl{color:#ff9a4a;}
+.mr-val.ev{color:var(--volt);}
+.reset-btn{margin-top:10px;font-size:11px;color:var(--muted);background:none;border:none;cursor:pointer;text-decoration:underline;}
+
+/* RESULTS */
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px;}
+.chart-ttl{font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+.chart-sub{font-size:10px;color:var(--muted);opacity:0.7;margin-bottom:12px;}
+.chart-wrap{height:220px;position:relative;}
+
+.table-card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:14px;}
+.tbl-head{display:grid;grid-template-columns:1fr 90px 90px;background:var(--blue);padding:8px 12px;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
+.tbl-row{display:grid;grid-template-columns:1fr 90px 90px;padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:12px;}
+.tbl-row:nth-child(odd){background:rgba(255,255,255,0.02);}
+.tbl-total{display:grid;grid-template-columns:1fr 90px 90px;padding:12px;background:rgba(0,229,192,0.08);border-top:2px solid rgba(0,229,192,0.3);}
+.col-label{color:var(--white);}
+.col-ann{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;color:var(--volt);}
+.col-5yr{font-family:'Barlow Condensed',sans-serif;font-size:16px;color:var(--muted);}
+.tbl-total .col-ann,.tbl-total .col-5yr{font-size:18px;font-weight:800;}
+
+.payback-strip{background:rgba(255,184,0,0.08);border:1px solid rgba(255,184,0,0.25);border-radius:10px;padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;gap:14px;}
+.pb-num{font-family:'Barlow Condensed',sans-serif;font-size:56px;font-weight:900;color:var(--amber);line-height:1;}
+.pb-text{font-size:12px;color:var(--muted);line-height:1.5;}
+.pb-text strong{color:var(--white);}
+
+.parity-notice{display:none;background:rgba(0,229,192,0.08);border:1px solid rgba(0,229,192,0.25);border-radius:10px;padding:14px 16px;margin-bottom:14px;font-size:13px;color:var(--volt);line-height:1.5;}
+
+.cta{background:linear-gradient(135deg,rgba(0,170,255,0.15),rgba(0,229,192,0.08));border:1px solid rgba(0,170,255,0.3);border-radius:10px;padding:16px;text-align:center;margin-bottom:14px;}
+.cta-name{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--white);}
+.cta-title{font-size:11px;color:var(--muted);margin-bottom:12px;}
+.cta-btn{display:block;background:var(--electric);color:#000;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;letter-spacing:0.08em;text-transform:uppercase;padding:12px 22px;border-radius:8px;text-decoration:none;margin:6px 0;}
+.cta-btn.sec{background:transparent;color:var(--electric);border:1px solid var(--electric);}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="logo">ZM<span>8</span> ROI</div>
+  <div class="badge">Washington State</div>
+</div>
+
+<!-- LIVE STRIP -->
+<div class="strip">
+  <div class="strip-item">
+    <div class="s-label">Annual Savings</div>
+    <div class="s-val green" id="s-annual">—</div>
+  </div>
+  <div class="strip-item">
+    <div class="s-label">10-Year Savings</div>
+    <div class="s-val green" id="s-10yr">—</div>
+  </div>
+  <div class="strip-item">
+    <div class="s-label">Payback</div>
+    <div class="s-val amber" id="s-payback">—</div>
+  </div>
+  <div class="strip-item">
+    <div class="s-label">Net ZM8 Price</div>
+    <div class="s-val blue" id="s-net">—</div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="showTab('inputs',this)">⚙ Inputs</div>
+  <div class="tab" onclick="showTab('results',this)">📊 Results</div>
+</div>
+
+<!-- INPUTS PANEL -->
+<div class="panel active" id="panel-inputs">
+
+  <div class="sec-title" style="margin-top:4px;">ZM8 Electric Truck</div>
+  <div class="slider-group">
+    <div class="sl-header">
+      <span class="sl-name">ZM8 Purchase Price</span>
+      <span class="sl-val" id="lv-price">$155,000</span>
+    </div>
+    <input type="range" id="sl-price" min="100000" max="275000" step="5000" value="155000">
+    <div class="range-ends"><span>$100K</span><span>$275K</span></div>
+  </div>
+
+  <div class="sec-title">Comparable Diesel Truck</div>
+  <div class="diesel-truck-group">
+    <div class="diesel-truck-label">What diesel truck are you comparing against?</div>
+    <div class="sl-header">
+      <span class="sl-name" style="color:var(--white);">Diesel Truck Price</span>
+      <span class="sl-val" id="lv-diesel-truck" style="color:#ff9a4a;">$75,000</span>
+    </div>
+    <input type="range" id="sl-diesel-truck" min="50000" max="225000" step="5000" value="75000">
+    <div class="range-ends"><span>$50K</span><span>$225K</span></div>
+  </div>
+
+  <div class="sec-title">Fleet Operation</div>
+  <div class="slider-group">
+    <div class="sl-header">
+      <span class="sl-name">Miles Per Day</span>
+      <span class="sl-val" id="lv-miles">80 mi</span>
+    </div>
+    <input type="range" id="sl-miles" min="30" max="150" step="5" value="80">
+    <div class="range-ends"><span>30 mi</span><span>150 mi</span></div>
+  </div>
+  <div class="slider-group">
+    <div class="sl-header">
+      <span class="sl-name">Working Days / Year</span>
+      <span class="sl-val" id="lv-days">250 days</span>
+    </div>
+    <input type="range" id="sl-days" min="200" max="355" step="5" value="250">
+    <div class="range-ends"><span>200</span><span>355</span></div>
+  </div>
+
+  <div class="sec-title">Fuel Costs</div>
+  <div class="slider-group">
+    <div class="sl-header">
+      <span class="sl-name">Diesel Price ($/gal)</span>
+      <span class="sl-val" id="lv-diesel">$4.20</span>
+    </div>
+    <input type="range" id="sl-diesel" min="2.50" max="8.00" step="0.10" value="4.20">
+    <div class="range-ends"><span>$2.50</span><span>$8.00</span></div>
+  </div>
+  <div class="slider-group">
+    <div class="sl-header">
+      <span class="sl-name">Electricity Rate ($/kWh)</span>
+      <span class="sl-val" id="lv-kwh">$0.12</span>
+    </div>
+    <input type="range" id="sl-kwh" min="0.07" max="0.60" step="0.01" value="0.12">
+    <div class="range-ends"><span>$0.07</span><span>$0.60</span></div>
+  </div>
+
+  <div class="sec-title">WAZIP Incentive</div>
+  <div class="wazip-block">
+    <div class="wazip-hdr">
+      <span class="wazip-lbl">Apply WAZIP Voucher</span>
+      <label class="toggle">
+        <input type="checkbox" id="wazip-toggle" checked>
+        <span class="tgl-sl"></span>
+      </label>
+    </div>
+    <div class="tier-sel vis" id="tier-sel">
+      <button class="tier-btn" onclick="setTier(0,this)">No WAZIP<strong>$0</strong></button>
+      <button class="tier-btn" onclick="setTier(80000,this)">Standard — Any Business<strong>$80,000</strong></button>
+      <button class="tier-btn active" onclick="setTier(90000,this)">Enhanced — Small Business (&le;$10M)<strong>$90,000</strong></button>
+    </div>
+  </div>
+
+  <div class="sec-title">Maintenance</div>
+  <div class="maint-block">
+    <div class="maint-hdr" onclick="toggleMaint()">
+      <span class="maint-ttl">Annual Cost Breakdown</span>
+      <span class="exp-icon open" id="exp-icon">▼</span>
+    </div>
+    <div class="maint-sum">
+      <div class="ms-item"><div class="ms-lbl">Diesel/yr</div><div class="ms-val" id="ms-d" style="color:#ff9a4a">—</div></div>
+      <div class="ms-item"><div class="ms-lbl">EV/yr</div><div class="ms-val" id="ms-e" style="color:var(--volt)">—</div></div>
+      <div class="ms-item"><div class="ms-lbl">You Save</div><div class="ms-val" id="ms-n" style="color:var(--white)">—</div></div>
+    </div>
+    <div class="maint-det vis" id="maint-det">
+      <div class="maint-cat">Diesel Costs</div>
+      <div id="d-rows"></div>
+      <div class="maint-cat" style="margin-top:12px;">EV Retained Costs</div>
+      <div id="e-rows"></div>
+      <button class="reset-btn" onclick="resetMaint()">↺ Reset to defaults</button>
+    </div>
+  </div>
+
+  <div style="padding-bottom:20px;">
+    <button onclick="showTab('results',document.querySelectorAll('.tab')[1])"
+      style="width:100%;padding:14px;background:var(--electric);color:#000;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;letter-spacing:0.1em;text-transform:uppercase;border:none;border-radius:10px;cursor:pointer;">
+      VIEW RESULTS →
+    </button>
+  </div>
+
+</div><!-- /inputs -->
+
+<!-- RESULTS PANEL -->
+<div class="panel" id="panel-results">
+
+  <div class="chart-card">
+    <div class="chart-ttl">Total Cost of Ownership — Where Lines Cross = Payback</div>
+    <div class="chart-sub">Year 0 = purchase price. Lines include annual fuel & maintenance. Crossing point = break-even.</div>
+    <div class="chart-wrap"><canvas id="myChart"></canvas></div>
+  </div>
+
+  <div class="parity-notice" id="parity-notice">
+    ✓ After the WAZIP voucher, the ZM8 net purchase price is already at or below the comparable diesel truck — break-even is at or before Day 1.
+  </div>
+
+  <div class="payback-strip" id="payback-strip">
+    <div class="pb-num" id="pb-num">—</div>
+    <div class="pb-text"><strong>Years to payback</strong><br>Net ZM8 price vs. diesel price,<br>recovered through annual savings.</div>
+  </div>
+
+  <div class="table-card">
+    <div class="tbl-head"><span>Category</span><span>Annual</span><span>5-Year</span></div>
+    <div class="tbl-row">
+      <span class="col-label">Fuel Savings</span>
+      <span class="col-ann" id="t-fuel-a">—</span>
+      <span class="col-5yr" id="t-fuel-5">—</span>
+    </div>
+    <div class="tbl-row">
+      <span class="col-label">Maintenance Savings</span>
+      <span class="col-ann" id="t-mnt-a">—</span>
+      <span class="col-5yr" id="t-mnt-5">—</span>
+    </div>
+    <div class="tbl-total">
+      <span class="col-label" style="color:var(--volt);font-weight:600;">Total Savings</span>
+      <span class="col-ann" id="t-tot-a">—</span>
+      <span class="col-5yr" id="t-tot-5">—</span>
+    </div>
+  </div>
+
+  <div class="cta">
+    <div class="cta-name">James May</div>
+    <div class="cta-title">Regional Sales Manager — East &nbsp;|&nbsp; ZM Trucks</div>
+    <a class="cta-btn" href="tel:8178514989">(817) 851-4989</a>
+    <a class="cta-btn sec" href="mailto:jmay@zo-motors.com">jmay@zo-motors.com</a>
+  </div>
+
+</div><!-- /results -->
+
+<script>
+const dieselItems = [
+  {label:"Oil & Filter Changes (6/yr)",   def:900},
+  {label:"DEF Fluid",                      def:300},
+  {label:"Transmission Service",           def:400},
+  {label:"Fuel Filters",                   def:250},
+  {label:"Belts & Tensioners",             def:350},
+  {label:"Cooling System",                 def:300},
+  {label:"Engine Air Filter",              def:120},
+  {label:"Turbo / Injector Service",       def:600},
+  {label:"Annual Inspection",              def:400},
+];
+const evItems = [
+  {label:"Reduced Brake Service (regen)",  def:200},
+  {label:"Cabin HVAC / Filters",           def:150},
+  {label:"Consumables & Misc",             def:200},
+  {label:"Annual Inspection",              def:250},
+];
+let dVals = dieselItems.map(i=>i.def);
+let eVals = evItems.map(i=>i.def);
+let wazipAmt = 90000;
+let chart;
+
+function showTab(name, el) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('panel-'+name).classList.add('active');
+}
+
+function setTier(amt, btn) {
+  wazipAmt = amt;
+  document.querySelectorAll('.tier-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('wazip-toggle').checked = amt > 0;
+  update();
+}
+
+document.getElementById('wazip-toggle').addEventListener('change', function() {
+  if (!this.checked) { wazipAmt=0; document.querySelectorAll('.tier-btn').forEach(b=>b.classList.remove('active')); }
+  else { wazipAmt=90000; document.querySelectorAll('.tier-btn')[2].classList.add('active'); }
+  update();
+});
+
+function toggleMaint() {
+  document.getElementById('maint-det').classList.toggle('vis');
+  document.getElementById('exp-icon').classList.toggle('open');
+}
+
+function buildMaintRows() {
+  const dEl=document.getElementById('d-rows'), eEl=document.getElementById('e-rows');
+  dEl.innerHTML=''; eEl.innerHTML='';
+  dieselItems.forEach((item,i)=>{
+    dEl.innerHTML+=`<div class="maint-row">
+      <span class="mr-label">${item.label}</span>
+      <div class="mr-ctrls">
+        <button class="adj-btn" onclick="adj('d',${i},-50)">−</button>
+        <span class="mr-val dsl" id="dv${i}">$${dVals[i].toLocaleString()}</span>
+        <button class="adj-btn" onclick="adj('d',${i},50)">+</button>
+      </div></div>`;
+  });
+  evItems.forEach((item,i)=>{
+    eEl.innerHTML+=`<div class="maint-row">
+      <span class="mr-label">${item.label}</span>
+      <div class="mr-ctrls">
+        <button class="adj-btn" onclick="adj('e',${i},-25)">−</button>
+        <span class="mr-val ev" id="ev${i}">$${eVals[i].toLocaleString()}</span>
+        <button class="adj-btn" onclick="adj('e',${i},25)">+</button>
+      </div></div>`;
+  });
+}
+
+function adj(type,idx,delta) {
+  if(type==='d'){dVals[idx]=Math.max(0,dVals[idx]+delta);document.getElementById('dv'+idx).textContent='$'+dVals[idx].toLocaleString();}
+  else{eVals[idx]=Math.max(0,eVals[idx]+delta);document.getElementById('ev'+idx).textContent='$'+eVals[idx].toLocaleString();}
+  update();
+}
+
+function resetMaint() {
+  dVals=dieselItems.map(i=>i.def);
+  eVals=evItems.map(i=>i.def);
+  buildMaintRows();
+  update();
+}
+
+function fmt(n){return '$'+Math.round(n).toLocaleString();}
+
+function update() {
+  const zm8Price  = +document.getElementById('sl-price').value;
+  const dslPrice  = +document.getElementById('sl-diesel-truck').value;
+  const miles     = +document.getElementById('sl-miles').value;
+  const days      = +document.getElementById('sl-days').value;
+  const dieselGal = +document.getElementById('sl-diesel').value;
+  const kwh       = +document.getElementById('sl-kwh').value;
+
+  document.getElementById('lv-price').textContent        = '$'+zm8Price.toLocaleString();
+  document.getElementById('lv-diesel-truck').textContent = '$'+dslPrice.toLocaleString();
+  document.getElementById('lv-miles').textContent        = miles+' mi';
+  document.getElementById('lv-days').textContent         = days+' days';
+  document.getElementById('lv-diesel').textContent       = '$'+dieselGal.toFixed(2);
+  document.getElementById('lv-kwh').textContent          = '$'+kwh.toFixed(2);
+
+  const annMiles       = miles * days;
+  const fuelDsl        = (annMiles / 8) * dieselGal;
+  const fuelEV         = annMiles * 1.1 * kwh;
+  const fuelSav        = fuelDsl - fuelEV;
+  const totDMaint      = dVals.reduce((a,b)=>a+b,0);
+  const totEMaint      = eVals.reduce((a,b)=>a+b,0);
+  const maintSav       = totDMaint - totEMaint;
+  const annSav         = fuelSav + maintSav;
+  const netZM8         = zm8Price - wazipAmt;
+  const premium        = netZM8 - dslPrice;
+  const payback        = (annSav > 0 && premium > 0) ? (premium / annSav) : null;
+
+  document.getElementById('s-annual').textContent = fmt(annSav);
+  document.getElementById('s-10yr').textContent   = fmt(annSav*10);
+  document.getElementById('s-net').textContent    = fmt(netZM8);
+  document.getElementById('ms-d').textContent     = fmt(totDMaint);
+  document.getElementById('ms-e').textContent     = fmt(totEMaint);
+  document.getElementById('ms-n').textContent     = fmt(maintSav);
+  document.getElementById('t-fuel-a').textContent = fmt(fuelSav);
+  document.getElementById('t-fuel-5').textContent = fmt(fuelSav*5);
+  document.getElementById('t-mnt-a').textContent  = fmt(maintSav);
+  document.getElementById('t-mnt-5').textContent  = fmt(maintSav*5);
+  document.getElementById('t-tot-a').textContent  = fmt(annSav);
+  document.getElementById('t-tot-5').textContent  = fmt(annSav*5);
+
+  const paybackStrip = document.getElementById('payback-strip');
+  const parityNotice = document.getElementById('parity-notice');
+
+  if (premium <= 0) {
+    document.getElementById('s-payback').textContent = 'Day 1';
+    document.getElementById('pb-num').textContent    = '≤0';
+    paybackStrip.style.display = 'none';
+    parityNotice.style.display = 'block';
+  } else if (payback !== null) {
+    document.getElementById('s-payback').textContent = payback.toFixed(1)+'yr';
+    document.getElementById('pb-num').textContent    = payback.toFixed(1);
+    paybackStrip.style.display = 'flex';
+    parityNotice.style.display = 'none';
+  } else {
+    document.getElementById('s-payback').textContent = 'N/A';
+    document.getElementById('pb-num').textContent    = 'N/A';
+    paybackStrip.style.display = 'flex';
+    parityNotice.style.display = 'none';
+  }
+
+  // Chart
+  const dData=[],eData=[],dotData=new Array(11).fill(null);
+  const annDslOp = fuelDsl + totDMaint;
+  const annEVOp  = fuelEV  + totEMaint;
+  for(let y=0;y<=10;y++){
+    dData.push(dslPrice + y*annDslOp);
+    eData.push(netZM8   + y*annEVOp);
+  }
+  if(premium>0 && annSav>0){
+    const pbYr = premium/annSav;
+    if(pbYr<=10){
+      const dotYr=Math.round(pbYr);
+      if(dotYr<=10) dotData[dotYr]=dslPrice+dotYr*annDslOp;
+    }
+  }
+  chart.data.datasets[0].data=dData;
+  chart.data.datasets[1].data=eData;
+  chart.data.datasets[2].data=dotData;
+  chart.update();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  buildMaintRows();
+  const ctx = document.getElementById('myChart').getContext('2d');
+  chart = new Chart(ctx, {
+    type:'line',
+    data:{
+      labels:['Yr 0','Yr 1','Yr 2','Yr 3','Yr 4','Yr 5','Yr 6','Yr 7','Yr 8','Yr 9','Yr 10'],
+      datasets:[
+        {label:'Diesel total cost',data:[],borderColor:'#00aaff',backgroundColor:'rgba(0,170,255,0.06)',borderWidth:2,pointRadius:3,pointBackgroundColor:'#00aaff',tension:0.3},
+        {label:'ZM8 total cost',   data:[],borderColor:'#00e5c0',backgroundColor:'rgba(0,229,192,0.06)',borderWidth:2,pointRadius:3,pointBackgroundColor:'#00e5c0',tension:0.3},
+        {label:'Payback point',    data:[],borderColor:'transparent',backgroundColor:'transparent',pointRadius:10,pointBackgroundColor:'#ffb800',pointBorderColor:'#ffb800',showLine:false}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{labels:{color:'#7a95b8',font:{family:'Barlow',size:11},boxWidth:12}},
+        tooltip:{callbacks:{label:function(ctx){
+          if(ctx.datasetIndex===2&&ctx.parsed.y===null)return null;
+          if(ctx.datasetIndex===2)return '★ Payback: Year '+ctx.label.replace('Yr ','');
+          return ctx.dataset.label+': $'+Math.round(ctx.parsed.y).toLocaleString();
+        }}}
+      },
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#7a95b8',font:{size:10}}},
+        y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#7a95b8',font:{size:10},callback:v=>'$'+(v/1000).toFixed(0)+'K'}}
+      }
+    }
+  });
+  ['sl-price','sl-diesel-truck','sl-miles','sl-days','sl-diesel','sl-kwh'].forEach(id=>{
+    document.getElementById(id).addEventListener('input', update);
+  });
+  update();
+});
+</script>
+</body>
+</html>
